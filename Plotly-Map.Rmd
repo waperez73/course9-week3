@@ -1,0 +1,56 @@
+---
+title: "Course 9 - Week 3 project Plotly Map"
+author: "Wellintton Perez"
+date: "11/12/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r echo=FALSE, message=FALSE}
+library(plotly)
+library(data.table)
+library(dplyr)
+```
+
+## Introduction
+
+I am using the data set for a data analytic project I worked on for a non-profit called
+[Classroom, Inc.](https://www.classroominc.org/) Please check them out they do great work in the less fortunate
+communities accross the USA and the world. This plotly map shows the distribution of student in the United States.  For this map I am only using the United States data.
+
+```{r echo=TRUE, message=FALSE}
+data<-fread("dateset-latlon.csv",sep=",",stringsAsFactors = FALSE,nrows=-1)
+
+top_5_states <- data[order(-data$count)][1:5]
+labels <- c(paste(top_5_states$state,top_5_states$count,sep=": "))
+```
+
+### Classroom, Inc. Student distribution
+
+The map shows the states where Classroom, Inc has affiliated with local schools to allow students to play the games.
+
+- Hover over the map to view the popup showing the total number of students per state.
+
+```{r echo=TRUE, message=FALSE}
+state_count <- data.frame(state = state.abb[match(data$state,state.name)], count = as.vector(data$count))
+
+state_count$hover <- with(state_count, paste(state, '<br>', "Students:", count))
+
+borders <- list(color = toRGB("red"))
+
+map_options <- list(
+  scope = 'usa',
+  projection = list(type = 'state usa'),
+  showlakes = TRUE,
+  lakecolor = toRGB('white'))
+
+  gg<-plot_ly(z = ~state_count$count, text = ~state_count$hover, locations = ~state_count$state,
+          type = 'choropleth', locationmode = 'USA-states',
+          color = state_count$count, colors = 'Blues', marker = list(line = borders)) %>%
+         layout(title = 'Classroom, Inc. Students', geo = map_options)
+gg
+````
+
